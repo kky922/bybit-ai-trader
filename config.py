@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 ROOT_DIR = Path(__file__).resolve().parent
 LOGS_DIR = ROOT_DIR / "logs"
 DATA_DIR = ROOT_DIR / "data"
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 load_dotenv(ROOT_DIR / ".env")
 

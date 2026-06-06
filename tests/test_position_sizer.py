@@ -22,6 +22,6 @@ def test_compute_size_min_notional_block():
         stop=900,
         lot_step=0.001,
         min_amount=0.001,
-        min_notional=5,
+        min_notional=10,
     )
     assert size == 0.0

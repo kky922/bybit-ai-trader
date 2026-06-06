@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 
@@ -36,6 +38,7 @@ def check_tradfi_entry(
     spy_4h: pd.DataFrame | None = None,
     *,
     regime: str = "neutral",
+    now_kst: datetime | None = None,
 ) -> tuple[TradFiEntrySignal | None, str]:
     """
     TradFi 진입 신호 체크.
@@ -49,34 +52,23 @@ def check_tradfi_entry(
 
     # ── 필터 0: 주식/원자재 장시간 체크 ──
     if symbol_type == "stock":
-        # 인스턴스 없이 정적으로 체크
-        from datetime import datetime, timezone
-        try:
-            from zoneinfo import ZoneInfo
-        except ImportError:
-            from backports.zoneinfo import ZoneInfo  # type: ignore
-        now_kst = datetime.now(ZoneInfo("Asia/Seoul"))
-        if now_kst.weekday() >= 5:
+        current_kst = now_kst or datetime.now(ZoneInfo("Asia/Seoul"))
+        if current_kst.weekday() >= 5:
             return None, "market_closed:weekend"
-        month = now_kst.month
-        is_dst = 3 <= month <= 10 or (month == 11 and now_kst.day <= 7)
+        month = current_kst.month
+        is_dst = 3 <= month <= 10 or (month == 11 and current_kst.day <= 7)
         open_h, open_m = (22, 30) if is_dst else (23, 30)
         close_h = 5 if is_dst else 6
-        h, m = now_kst.hour, now_kst.minute
+        h, m = current_kst.hour, current_kst.minute
         after_open = h > open_h or (h == open_h and m >= open_m)
         before_close = h < close_h or (h == close_h and m == 0)
         is_open = after_open or before_close  # 자정을 넘어가므로 OR
         if not is_open:
-            return None, f"market_closed:kst={now_kst.strftime('%H:%M')}"
+            return None, f"market_closed:kst={current_kst.strftime('%H:%M')}"
     elif symbol_type == "commodity":
         # 원자재(금, 은, 원유 등)는 주중(월-금)만 거래 가능
-        from datetime import datetime, timezone
-        try:
-            from zoneinfo import ZoneInfo
-        except ImportError:
-            from backports.zoneinfo import ZoneInfo  # type: ignore
-        now_kst = datetime.now(ZoneInfo("Asia/Seoul"))
-        if now_kst.weekday() >= 5:
+        current_kst = now_kst or datetime.now(ZoneInfo("Asia/Seoul"))
+        if current_kst.weekday() >= 5:
             return None, "commodity_market_closed:weekend"
 
     # ── 필터 1: SPY 매크로 필터 ──
