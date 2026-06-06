@@ -1,0 +1,10 @@
+ccxt
+pandas
+numpy
+python-dotenv
+feedparser
+requests
+google-genai
+aiohttp
+streamlit
+pytest

@@ -1,0 +1,15 @@
+.env
+.env*
+*.env.local
+__pycache__/
+*.py[cod]
+logs/
+pids/
+*.pid
+*.pem
+node_modules/
+.DS_Store
+Thumbs.db
+*.db
+data/agents/*.json
+data/agents/*.jsonl
